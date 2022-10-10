@@ -12,7 +12,7 @@ Features:
 
 ## Simple Usage
 
-```
+```javascript
 import { apiRoute } from 'src/lib/nextRouteHandler';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -22,6 +22,6 @@ export default apiRoute()
   })
   .post(async (req: NextApiRequest, res: NextApiResponse) => {
     // Insert data into some DB...
-    return req.body || { id: 0, title: 'Sample record'};
+    return req.body || { id: 0, title: 'Sample record' };
   });
 ```
