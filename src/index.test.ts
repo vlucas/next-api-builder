@@ -14,9 +14,7 @@ describe('Next.js API Builder', () => {
       method: 'GET',
       query: { foo: 'bar' },
     });
-    const handler = apiRoute().get(async () => {
-      return { foo: req.query.foo };
-    });
+    const handler = apiRoute().get(async () => ({ foo: req.query.foo }));
 
     await handler(req, res);
 

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "API Builder for Next.js",
   "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "homepage": "https://github.com/vlucas/next-api-builder",
   "repository": {
     "type": "git",
@@ -13,7 +14,6 @@
   },
   "author": "Vance Lucas",
   "license": "BSD-3-Clause",
-  "types": "build/src/index.d.ts",
   "scripts": {
     "lint": "eslint .",
     "test": "jest .",
