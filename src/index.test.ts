@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { RequestOptions } from 'node-mocks-http';
 import { createRequest, createResponse } from 'node-mocks-http';
+import { z } from 'zod';
 import { apiRoute } from './index';
 
 export const createTestRouteContext = (opts: RequestOptions) => ({
@@ -57,5 +58,27 @@ describe('Next.js API Builder', () => {
     await handler(req, res);
 
     expect(res._getStatusCode()).toEqual(405);
+  });
+
+  // With options
+  it('should provide data types for schema', async () => {
+    const testSchema = z
+      .object({
+        foo: z.string(),
+      })
+      .strict();
+    const { req, res } = createTestRouteContext({
+      method: 'GET',
+      query: { foo: 'bar' },
+    });
+    // @ts-ignore
+    const handler = apiRoute().get(async (req, res, data) => ({ foo: data.foo }), {
+      validateQuery: testSchema,
+    });
+
+    await handler(req, res);
+
+    expect(res._getJSONData().data).toEqual({ foo: 'bar' });
+    expect(res._getStatusCode()).toEqual(200);
   });
 });

@@ -1,7 +1,14 @@
-import { z, ZodSchema } from 'zod';
+import { z, ZodSchema, ZodTypeAny, ZodError } from 'zod';
 
 // Types
 import type { NextApiRequest, NextApiResponse } from 'next';
+// Mock AxiosError instead of installing package as a devDep (only what we need)
+interface AxiosError extends Error {
+  isAxiosError: boolean;
+  response: {
+    data: any;
+  };
+}
 
 const NODE_ENV: string = process.env.NODE_ENV || '';
 
@@ -56,24 +63,14 @@ export type HandlerFunction = (
   res: NextApiResponse,
 ) => Promise<HandlerResponse>;
 export type THttpHandlerOptions = {
-  validateBody?: ZodSchema<TSchema>;
-  validateQuery?: ZodSchema<TSchema>;
+  validateBody?: ZodSchema;
+  validateQuery?: ZodSchema;
 };
 export type THttpHandler = <T>(req: NextApiRequest, res: NextApiResponse, data?: T) => Promise<any>;
 export type TMethodHandler = {
   handler: THttpHandler;
   options?: THttpHandlerOptions;
 };
-
-type TSchema = unknown;
-type TValidatePath = 'body' | 'query';
-export async function validateSchema<T>(
-  schema: ZodSchema<TSchema>,
-  req: NextApiRequest,
-  path: TValidatePath,
-): Promise<T> {
-  return (await schema.parseAsync(req[path])) as Promise<T>;
-}
 
 /**
  * API route builder
@@ -108,35 +105,57 @@ export function apiRoute() {
         );
       }
 
+      let schema: ZodTypeAny;
       let schemaData;
       // Run validations, if any
       if (methodHandler.options?.validateQuery) {
-        type TSchema = z.infer<typeof methodHandler.options.validateQuery>;
-        schemaData = await validateSchema<TSchema>(
-          methodHandler.options.validateQuery,
-          req,
-          'query',
-        );
+        schema = methodHandler.options.validateQuery;
+        schemaData = await schema.parseAsync(req.query);
       }
       if (methodHandler.options?.validateBody) {
-        type TSchema = z.infer<typeof methodHandler.options.validateBody>;
-        schemaData = await validateSchema<TSchema>(methodHandler.options.validateBody, req, 'body');
+        schema = methodHandler.options.validateBody;
+        schemaData = await schema.parseAsync(JSON.parse(req.body));
       }
 
-      const json = await methodHandler.handler(req, res, schemaData);
+      // Takes a ZodType | undefined union and spits out either an inferred
+      // type for the schema, or undefined. This allows us to more smoothly
+      // handle type inference for optional schemas:
+      // type OptionalSchemaType<S> = S extends ZodTypeAny ? z.infer<S> : undefined;
+
+      type TSchema = z.infer<typeof schema>;
+      const json = await methodHandler.handler(req, res, schemaData as TSchema);
 
       if (json) {
         return sendJSONSuccess(res, json);
       }
     } catch (err) {
       // Handle ZodError (validation failure)
-      if (err instanceof z.ZodError) {
-        const e = err as z.ZodError;
+      if (err instanceof ZodError) {
+        const e = err as ZodError;
 
         const errorJSON = {
-          fieldErrors: e.flatten().fieldErrors,
+          title: 'A validation error has occured',
+          errors: e.format(),
         };
-        const statusCode: number = 400;
+        const statusCode = 400;
+
+        return sendJSONErrors(res, errorJSON, statusCode);
+      }
+
+      // Handle Axios error (sadly common fetch library)
+      // @ts-ignore
+      if (err.isAxiosError) {
+        const e = err as AxiosError;
+        const statusCode = 400;
+
+        const title = 'An HTTP request error has occurred';
+        const errorJSON = {
+          data: e.response && e.response.data ? e.response.data : undefined,
+          title,
+          stack: NODE_ENV === 'development' && e.stack ? e.stack.split('\n') : undefined,
+          type: e.name,
+          detail: e.message,
+        };
 
         return sendJSONErrors(res, errorJSON, statusCode);
       }
