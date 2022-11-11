@@ -114,7 +114,17 @@ export function apiRoute() {
       }
       if (methodHandler.options?.validateBody) {
         schema = methodHandler.options.validateBody;
-        schemaData = await schema.parseAsync(JSON.parse(req.body));
+        let body = req.body;
+
+        try {
+          if (typeof req.body === 'string') {
+            body = JSON.parse(req.body);
+          }
+        } catch (e) {
+          console.log('Unable to JSON parse body', req.body);
+        }
+
+        schemaData = await schema.parseAsync(body);
       }
 
       // Takes a ZodType | undefined union and spits out either an inferred
