@@ -120,9 +120,7 @@ export function apiRoute() {
           if (typeof req.body === 'string') {
             body = JSON.parse(req.body);
           }
-        } catch (e) {
-          console.log('Unable to JSON parse body', req.body);
-        }
+        } catch (e) {}
 
         schemaData = await schema.parseAsync(body);
       }
