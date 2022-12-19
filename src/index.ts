@@ -73,14 +73,6 @@ export type TMethodHandler = {
 };
 
 /**
- * Allows wrappers around HTTP handlers (global)
- */
-let _globalApiRouteWrapper: any;
-export function setGlobalApiRouteWrapper(fn: any): void {
-  _globalApiRouteWrapper = fn;
-}
-
-/**
  * API route builder
  */
 export function apiRoute() {
@@ -233,11 +225,6 @@ export function apiRoute() {
     handlers['DELETE'] = { handler, options };
     return _apiRouteHandler;
   };
-
-  // Allow global API route wrapper
-  if (_globalApiRouteWrapper) {
-    return _globalApiRouteWrapper(_apiRouteHandler);
-  }
 
   return _apiRouteHandler;
 }
