@@ -81,4 +81,91 @@ describe('Next.js API Builder', () => {
     expect(res._getJSONData().data).toEqual({ foo: 'bar' });
     expect(res._getStatusCode()).toEqual(200);
   });
+
+  describe('data parameter', () => {
+    it('should be populated for a GET request with query string data', async () => {
+      const { req, res } = createTestRouteContext({
+        method: 'GET',
+        query: { foo: 'bar' },
+      });
+      // @ts-ignore
+      const handler = apiRoute().get(async (req, res, data) => data);
+
+      await handler(req, res);
+
+      expect(res._getJSONData().data).toEqual({ foo: 'bar' });
+      expect(res._getStatusCode()).toEqual(200);
+    });
+
+    it('should be populated for a POST requests with body data', async () => {
+      const { req, res } = createTestRouteContext({
+        method: 'POST',
+        body: { foo: 'bar' },
+      });
+      // @ts-ignore
+      const handler = apiRoute().post(async (req, res, data) => data);
+
+      await handler(req, res);
+
+      expect(res._getJSONData().data).toEqual({ foo: 'bar' });
+      expect(res._getStatusCode()).toEqual(200);
+    });
+
+    it('should be populated for a POST requests with body data that is stringified', async () => {
+      const { req, res } = createTestRouteContext({
+        method: 'POST',
+        // @ts-ignore
+        body: JSON.stringify({ foo: 'bar' }),
+      });
+      // @ts-ignore
+      const handler = apiRoute().post(async (req, res, data) => data);
+
+      await handler(req, res);
+
+      expect(res._getJSONData().data).toEqual({ foo: 'bar' });
+      expect(res._getStatusCode()).toEqual(200);
+    });
+
+    it('should be populated for a PUT requests with body data', async () => {
+      const { req, res } = createTestRouteContext({
+        method: 'PUT',
+        body: { foo: 'bar' },
+      });
+      // @ts-ignore
+      const handler = apiRoute().put(async (req, res, data) => data);
+
+      await handler(req, res);
+
+      expect(res._getJSONData().data).toEqual({ foo: 'bar' });
+      expect(res._getStatusCode()).toEqual(200);
+    });
+
+    it('should be populated for a PATCH requests with body data', async () => {
+      const { req, res } = createTestRouteContext({
+        method: 'PATCH',
+        body: { foo: 'bar' },
+      });
+      // @ts-ignore
+      const handler = apiRoute().patch(async (req, res, data) => data);
+
+      await handler(req, res);
+
+      expect(res._getJSONData().data).toEqual({ foo: 'bar' });
+      expect(res._getStatusCode()).toEqual(200);
+    });
+
+    it('should be populated for a DELETE requests with body data', async () => {
+      const { req, res } = createTestRouteContext({
+        method: 'DELETE',
+        body: { foo: 'bar' },
+      });
+      // @ts-ignore
+      const handler = apiRoute().delete(async (req, res, data) => data);
+
+      await handler(req, res);
+
+      expect(res._getJSONData().data).toEqual({ foo: 'bar' });
+      expect(res._getStatusCode()).toEqual(200);
+    });
+  });
 });

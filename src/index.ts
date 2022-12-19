@@ -73,6 +73,14 @@ export type TMethodHandler = {
 };
 
 /**
+ * Allows wrappers around HTTP handlers (global)
+ */
+let _globalApiRouteWrapper: any;
+export function setGlobalApiRouteWrapper(fn: any): void {
+  _globalApiRouteWrapper = fn;
+}
+
+/**
  * API route builder
  */
 export function apiRoute() {
@@ -105,6 +113,16 @@ export function apiRoute() {
         );
       }
 
+      // Parse request body if present
+      let body = req.body;
+      if (body && ['DELETE', 'POST', 'PATCH', 'PUT'].includes(method)) {
+        try {
+          if (typeof req.body === 'string') {
+            body = JSON.parse(req.body);
+          }
+        } catch (e) {}
+      }
+
       let schema: ZodTypeAny;
       let schemaData;
       // Run validations, if any
@@ -114,15 +132,15 @@ export function apiRoute() {
       }
       if (methodHandler.options?.validateBody) {
         schema = methodHandler.options.validateBody;
-        let body = req.body;
-
-        try {
-          if (typeof req.body === 'string') {
-            body = JSON.parse(req.body);
-          }
-        } catch (e) {}
-
         schemaData = await schema.parseAsync(body);
+      }
+
+      // Ensure 'data' parameter is populated
+      if (!schemaData && method === 'GET') {
+        schemaData = req.query;
+      }
+      if (!schemaData && body) {
+        schemaData = body;
       }
 
       // Takes a ZodType | undefined union and spits out either an inferred
@@ -215,6 +233,11 @@ export function apiRoute() {
     handlers['DELETE'] = { handler, options };
     return _apiRouteHandler;
   };
+
+  // Allow global API route wrapper
+  if (_globalApiRouteWrapper) {
+    return _globalApiRouteWrapper(_apiRouteHandler);
+  }
 
   return _apiRouteHandler;
 }
