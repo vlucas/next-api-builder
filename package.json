@@ -1,6 +1,6 @@
 {
   "name": "next-api-builder",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "An easy way to build API routes in Next.js with the right defaults.",
   "keywords": [
     "next",
