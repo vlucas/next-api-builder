@@ -1,8 +1,15 @@
 {
   "name": "next-api-builder",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An easy way to build API routes in Next.js with the right defaults.",
-  "keywords": ["next", "nextjs", "api", "api builder", "next api", "nextjs api"],
+  "keywords": [
+    "next",
+    "nextjs",
+    "api",
+    "api builder",
+    "next api",
+    "nextjs api"
+  ],
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "homepage": "https://github.com/vlucas/next-api-builder",
