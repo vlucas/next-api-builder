@@ -10,6 +10,20 @@ Features:
 - Automatic `HEAD` response based on your defined `GET` handler
 - Automatic `405: Method Not Found` response for requests to methods not handled
 
+## Installation
+
+Install with NPM:
+
+```
+npm i next-api-builder
+```
+
+Or with Yarn:
+
+```
+yarn add next-api-builder
+```
+
 ## TypeScript Usage
 
 ```javascript
