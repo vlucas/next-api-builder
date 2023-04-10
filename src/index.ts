@@ -1,7 +1,8 @@
 import { z, ZodSchema, ZodTypeAny, ZodError } from 'zod';
 
 // Types
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next/types';
+
 // Mock AxiosError instead of installing package as a devDep (only what we need)
 interface AxiosError extends Error {
   isAxiosError: boolean;
